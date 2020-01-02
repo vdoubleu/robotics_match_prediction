@@ -4,6 +4,7 @@ import json
 import pandas as pd
 import numpy as np
 from flask import Flask
+import requests
 
 """
 #importing the data
@@ -24,13 +25,9 @@ app = Flask(__name__)
 def hello():
     return "hello"
 
-@app.route('/predictwithstats/<string:jsonin>')
-def stat_predict(jsonin):
-    json_data = json.loads(jsonin)
-    dataIn = pd.DataFrame(json_data)
-
+def predict(dframe):
     #take in one value at a time
-    valIn = dataIn.iloc[[2]]
+    valIn = dataIn.iloc[[0]]
 
     #0.71
     #winloss_dataIn = dataIn[["r1wins", "r1losses", "r2wins", "r2losses", "b1wins", "b1losses", "b2wins", "b2losses"]].copy()
@@ -54,6 +51,8 @@ def stat_predict(jsonin):
     combine_arr = np.concatenate((winloss_prediction, rankwpapspccwm_prediction, rankoprdpr_prediction))
     mean_out = combine_arr.mean(axis = 0)
 
+    return mean_out
+
 """
 #print(mean_out)
 
@@ -67,5 +66,30 @@ def stat_predict(jsonin):
 #test_loss, test_acc = rankoprdpr_model.evaluate(dataIn.values, dataOut.values)
 """
 
+def avg_stats(df):
+    data = {"rank":df["rank"].mean(), "wins":df["wins"].mean(), "losses":df["losses"].mean(), "ties":df["ties"].mean(), "wp":df["wp"].mean(), "ap":df["ap"].mean(), "sp":df["sp"].mean(), "trsp":df["trsp"].mean(), "maxscore":df["max_score"].mean(), "opr":df["opr"].mean(), "dpr":df["dpr"].mean(), "ccwm":df["ccwm"].mean()}
+    
+    return pd.DataFrame(data, index = [0])
+
+@app.route('/predictwithstats/<string:jsonin>')
+def stat_predict(stats):
+    json_data = json.loads(jsonin)
+    dataIn = pd.DataFrame(json_data)
+
+    return predict(dataIn)    
+
+@app.route('/predictwithteams/<string:teams>')
+def team_predict(teams):
+    teams_data = json.loads(teams)
+    
+    URL = "https://api.vexdb.io/v1/get_rankings"
+    r1 = avg_stats(pd.DataFrame(json.loads(requests.get(URL, {"team" : teams_data[0]}).text)['result'])).rename(lambda x: "r1"+x, axis="columns")
+    r2 = avg_stats(pd.DataFrame(json.loads(requests.get(URL, {"team" : teams_data[0]}).text)['result'])).rename(lambda x: "r2"+x, axis="columns")
+    b1 = avg_stats(pd.DataFrame(json.loads(requests.get(URL, {"team" : teams_data[0]}).text)['result'])).rename(lambda x: "b1"+x, axis="columns")
+    b2 = avg_stats(pd.DataFrame(json.loads(requests.get(URL, {"team" : teams_data[0]}).text)['result'])).rename(lambda x: "b2"+x, axis="columns")
+
+    return predict(pd.concat([r1, r2, b1, b2], axis = 1,  sort = False))
+    
+    
 if __name__ == '__main__':
     app.run(debug=True)
