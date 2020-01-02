@@ -6,19 +6,6 @@ import numpy as np
 from flask import Flask
 import requests
 
-"""
-#importing the data
-json_data = json.loads(open(r"data.txt", "r").read())
-allData = pd.DataFrame(json_data)
-
-#seperating it into
-dataOut = allData[["redscore", "bluescore", "redwin", "bluewin"]].copy()
-dataIn = allData.drop(["redscore", "bluescore", "redwin", "bluewin"], axis = 1)
-
-dataOut = dataOut.drop(["redscore", "bluescore"], axis = 1)
-#dataIn = dataIn[["r1rank", "r1opr", "r1dpr", "r2rank", "r2opr", "r2dpr", "b1rank", "b1opr", "b1dpr", "b2rank", "b2opr", "b2dpr"]].copy()
-"""
-
 app = Flask(__name__)
 
 @app.route('/')
@@ -29,42 +16,21 @@ def predict(dframe):
     #take in one value at a time
     valIn = dataIn.iloc[[0]]
 
-    #0.71
-    #winloss_dataIn = dataIn[["r1wins", "r1losses", "r2wins", "r2losses", "b1wins", "b1losses", "b2wins", "b2losses"]].copy()
     winloss_model = keras.models.load_model("./models/nonewinloss.h5")
     winloss_valIn = valIn[["r1wins", "r1losses", "r2wins", "r2losses", "b1wins", "b1losses", "b2wins", "b2losses"]].copy()
     winloss_prediction = winloss_model.predict(winloss_valIn.values)
 
-    #0.71
-    #rankwpapspccwm_dataIn = dataIn[["r1rank", "r1wp", "r1ap", "r1sp", "r1ccwm", "r2rank", "r2wp", "r2ap", "r2sp", "r2ccwm", "b1rank", "b1wp", "b1ap", "b1sp", "b1ccwm", "b2rank", "b2wp", "b2ap", "b2sp", "b2ccwm"]].copy()
     rankwpapspccwm_model = keras.models.load_model("./models/nonerankwpapspccwm.h5")
     rankwpapspccwm_valIn = valIn[["r1rank", "r1wp", "r1ap", "r1sp", "r1ccwm", "r2rank", "r2wp", "r2ap", "r2sp", "r2ccwm", "b1rank", "b1wp", "b1ap", "b1sp", "b1ccwm", "b2rank", "b2wp", "b2ap", "b2sp", "b2ccwm"]].copy()
     rankwpapspccwm_prediction = rankwpapspccwm_model.predict(rankwpapspccwm_valIn.values)
 
-    #0.7
-    #rankoprdpr_dataIn = dataIn[["r1rank", "r1opr", "r1dpr", "r2rank", "r2opr", "r2dpr", "b1rank", "b1opr", "b1dpr", "b2rank", "b2opr", "b2dpr"]].copy()
     rankoprdpr_model = keras.models.load_model("./models/nonerankoprdpr.h5")
     rankoprdpr_valIn = valIn[["r1rank", "r1opr", "r1dpr", "r2rank", "r2opr", "r2dpr", "b1rank", "b1opr", "b1dpr", "b2rank", "b2opr", "b2dpr"]].copy()
     rankoprdpr_prediction = rankoprdpr_model.predict(rankoprdpr_valIn.values)
-
-
     combine_arr = np.concatenate((winloss_prediction, rankwpapspccwm_prediction, rankoprdpr_prediction))
     mean_out = combine_arr.mean(axis = 0)
 
     return mean_out
-
-"""
-#print(mean_out)
-
-#print("vals: ")
-#print(dataIn.values[2:3])
-#print("prediction: ")
-#print(prediction)
-#print("actual: ")
-#print(dataOut.iloc[[2]])
-
-#test_loss, test_acc = rankoprdpr_model.evaluate(dataIn.values, dataOut.values)
-"""
 
 def avg_stats(df):
     data = {"rank":df["rank"].mean(), "wins":df["wins"].mean(), "losses":df["losses"].mean(), "ties":df["ties"].mean(), "wp":df["wp"].mean(), "ap":df["ap"].mean(), "sp":df["sp"].mean(), "trsp":df["trsp"].mean(), "maxscore":df["max_score"].mean(), "opr":df["opr"].mean(), "dpr":df["dpr"].mean(), "ccwm":df["ccwm"].mean()}
