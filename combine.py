@@ -31,19 +31,19 @@ def predict(dframe):
 
     #0.71
     #winloss_dataIn = dataIn[["r1wins", "r1losses", "r2wins", "r2losses", "b1wins", "b1losses", "b2wins", "b2losses"]].copy()
-    winloss_model = keras.models.load_model("nonewinloss.h5")
+    winloss_model = keras.models.load_model("./models/nonewinloss.h5")
     winloss_valIn = valIn[["r1wins", "r1losses", "r2wins", "r2losses", "b1wins", "b1losses", "b2wins", "b2losses"]].copy()
     winloss_prediction = winloss_model.predict(winloss_valIn.values)
 
     #0.71
     #rankwpapspccwm_dataIn = dataIn[["r1rank", "r1wp", "r1ap", "r1sp", "r1ccwm", "r2rank", "r2wp", "r2ap", "r2sp", "r2ccwm", "b1rank", "b1wp", "b1ap", "b1sp", "b1ccwm", "b2rank", "b2wp", "b2ap", "b2sp", "b2ccwm"]].copy()
-    rankwpapspccwm_model = keras.models.load_model("nonerankwpapspccwm.h5")
+    rankwpapspccwm_model = keras.models.load_model("./models/nonerankwpapspccwm.h5")
     rankwpapspccwm_valIn = valIn[["r1rank", "r1wp", "r1ap", "r1sp", "r1ccwm", "r2rank", "r2wp", "r2ap", "r2sp", "r2ccwm", "b1rank", "b1wp", "b1ap", "b1sp", "b1ccwm", "b2rank", "b2wp", "b2ap", "b2sp", "b2ccwm"]].copy()
     rankwpapspccwm_prediction = rankwpapspccwm_model.predict(rankwpapspccwm_valIn.values)
 
     #0.7
     #rankoprdpr_dataIn = dataIn[["r1rank", "r1opr", "r1dpr", "r2rank", "r2opr", "r2dpr", "b1rank", "b1opr", "b1dpr", "b2rank", "b2opr", "b2dpr"]].copy()
-    rankoprdpr_model = keras.models.load_model("nonerankoprdpr.h5")
+    rankoprdpr_model = keras.models.load_model("./models/nonerankoprdpr.h5")
     rankoprdpr_valIn = valIn[["r1rank", "r1opr", "r1dpr", "r2rank", "r2opr", "r2dpr", "b1rank", "b1opr", "b1dpr", "b2rank", "b2opr", "b2dpr"]].copy()
     rankoprdpr_prediction = rankoprdpr_model.predict(rankoprdpr_valIn.values)
 
@@ -83,10 +83,12 @@ def team_predict(teams):
     teams_data = json.loads(teams)
     
     URL = "https://api.vexdb.io/v1/get_rankings"
-    r1 = avg_stats(pd.DataFrame(json.loads(requests.get(URL, {"team" : teams_data[0]}).text)['result'])).rename(lambda x: "r1"+x, axis="columns")
-    r2 = avg_stats(pd.DataFrame(json.loads(requests.get(URL, {"team" : teams_data[0]}).text)['result'])).rename(lambda x: "r2"+x, axis="columns")
-    b1 = avg_stats(pd.DataFrame(json.loads(requests.get(URL, {"team" : teams_data[0]}).text)['result'])).rename(lambda x: "b1"+x, axis="columns")
-    b2 = avg_stats(pd.DataFrame(json.loads(requests.get(URL, {"team" : teams_data[0]}).text)['result'])).rename(lambda x: "b2"+x, axis="columns")
+    param = {"team" : teams_data[0]}
+
+    r1 = avg_stats(pd.DataFrame(json.loads(requests.get(URL, param).text)['result'])).rename(lambda x: "r1"+x, axis="columns")
+    r2 = avg_stats(pd.DataFrame(json.loads(requests.get(URL, param).text)['result'])).rename(lambda x: "r2"+x, axis="columns")
+    b1 = avg_stats(pd.DataFrame(json.loads(requests.get(URL, param).text)['result'])).rename(lambda x: "b1"+x, axis="columns")
+    b2 = avg_stats(pd.DataFrame(json.loads(requests.get(URL, param).text)['result'])).rename(lambda x: "b2"+x, axis="columns")
 
     return predict(pd.concat([r1, r2, b1, b2], axis = 1,  sort = False))
     
