@@ -13,8 +13,8 @@ def hello():
     return "hello"
 
 def predict(dframe):
-    #take in one value at a time
-    valIn = dataIn.iloc[[0]]
+    #only takes in first value
+    valIn = dframe.iloc[[0]]
 
     winloss_model = keras.models.load_model("./models/nonewinloss.h5")
     winloss_valIn = valIn[["r1wins", "r1losses", "r2wins", "r2losses", "b1wins", "b1losses", "b2wins", "b2losses"]].copy()
