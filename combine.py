@@ -19,15 +19,15 @@ dataOut = dataOut.drop(["redscore", "bluescore"], axis = 1)
 #dataIn = dataIn[["r1rank", "r1opr", "r1dpr", "r2rank", "r2opr", "r2dpr", "b1rank", "b1opr", "b1dpr", "b2rank", "b2opr", "b2dpr"]].copy()
 """
 
-app = Flask(__name__)
+#app = Flask(__name__)
 
-@app.route('/')
+#@app.route('/')
 def hello():
     return "hello"
 
 def predict(dframe):
     #take in one value at a time
-    valIn = dataIn.iloc[[0]]
+    valIn = dframe.iloc[[0]]
 
     #0.71
     #winloss_dataIn = dataIn[["r1wins", "r1losses", "r2wins", "r2losses", "b1wins", "b1losses", "b2wins", "b2losses"]].copy()
@@ -71,14 +71,14 @@ def avg_stats(df):
     
     return pd.DataFrame(data, index = [0])
 
-@app.route('/predictwithstats/<string:jsonin>')
+#@app.route('/predictwithstats/<string:jsonin>')
 def stat_predict(stats):
     json_data = json.loads(jsonin)
     dataIn = pd.DataFrame(json_data)
 
     return predict(dataIn)    
 
-@app.route('/predictwithteams/<string:teams>')
+#@app.route('/predictwithteams/<string:teams>')
 def team_predict(teams):
     teams_data = json.loads(teams)
     
@@ -94,4 +94,70 @@ def team_predict(teams):
     
     
 if __name__ == '__main__':
-    app.run(debug=True)
+    """print(team_predict("[\"15713A\", \"74947F\", \"4862B\", \"74947E\"]"))
+    print(team_predict("[\"4862B\", \"4862C\", \"2381D\", \"60759A\"]"))
+    print(team_predict("[\"4862D\", \"74947A\", \"4862B\", \"8716A\"]"))
+    print(team_predict("[\"40999B\", \"4862B\", \"89043A\", \"74947G\"]"))
+    print(team_predict("[\"2381C\", \"2381Y\", \"4862B\", \"4862A\"]"))
+    print(team_predict("[\"4862B\", \"30367J\", \"4862G\", \"4862E\"]"))
+    """
+    link = "https://api.vexdb.io/v1/get_matches"  
+    p = {"sku":"RE-VRC-19-8169"} 
+    
+    r = requests.get(link, p)
+
+    data = r.json()
+    
+    teams_dict = {} 
+
+    for x in range(data["size"]):
+      match_info = data["result"][x]
+      
+      red1 = match_info["red1"]
+      red2 = match_info["red2"]
+      blue1 = match_info["blue1"]
+      blue2 = match_info["blue2"]
+
+      if red1 not in teams_dict:
+         teams_dict[red1] = [0, 0]
+
+      if red2 not in teams_dict:
+         teams_dict[red2] = [0, 0]
+
+      if blue1 not in teams_dict:
+         teams_dict[blue1] = [0, 0]
+
+      if blue2 not in teams_dict:
+         teams_dict[blue2] = [0, 0]
+      
+      predict_string = "[\"" + str(red1) + "\", \"" + str(red2) + "\", \"" + str(blue1) + "\", \"" + str(blue2) + "\"]"      
+
+      result = team_predict(predict_string)
+      
+      if result[0] > result[1]:
+         teams_dict[red1][0] += 1
+         teams_dict[red2][0] += 1
+         teams_dict[blue1][1] += 1
+         teams_dict[blue2][1] += 1
+
+      if result[1] > result[0]:
+         teams_dict[red1][1] += 1
+         teams_dict[red2][1] += 1
+         teams_dict[blue1][0] += 1
+         teams_dict[blue2][0] += 1
+      
+      print("matchnum: " + str(x))
+      print(teams_dict)
+
+    team_list = []
+
+    for x in teams_dict.keys():
+      team_list.append((x , teams_dict[x]))       
+
+    
+
+     
+    print("done")
+    print(teams_dict)
+ 
+    #app.run(debug=True)
