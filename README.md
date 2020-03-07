@@ -6,7 +6,10 @@ Current approach combines the output of several different feed-forward neural ne
 
 Takes in the whole suite of statistics from VEXDB including CCWM, OPR, DPR, etc. to calculate the final output.
 
-Currently the program is setup as a Flask server that takes API get requests in the form:
+Currently the program is setup as a Flask server that takes HTML get requests. The program is setup in this way to be easily integratable as an API with the VScout robotics scouting application.
+
+These requests are in the form:
+
 ```predictWithTeams/<string:teams>``` or ```predictWithStats/<string:stats>```
 
 It is not recommended to use predictWithStats as input it quite complex. However, if you do wish to comb through it, you can look through the source code yourself.
@@ -18,4 +21,5 @@ So for example, if you wanted to see the result of (2381C, 2381W) vs (2381Y, 238
 
 The current model is able to correctly predict the outcome of a match about 80% of the time. Newer models are in the works with hopefully even higher effectiveness and capabilites. 
 
-To run this program, just startup combine.py.
+To run this program, just startup server.py.
+

@@ -3,14 +3,7 @@ from tensorflow import keras
 import json
 import pandas as pd
 import numpy as np
-from flask import Flask
 import requests
-
-app = Flask(__name__)
-
-@app.route('/')
-def hello():
-    return "hello"
 
 def predict(dframe):
     #only takes in first value
@@ -37,14 +30,12 @@ def avg_stats(df):
     
     return pd.DataFrame(data, index = [0])
 
-@app.route('/predictwithstats/<string:jsonin>')
 def stat_predict(stats):
     json_data = json.loads(jsonin)
     dataIn = pd.DataFrame(json_data)
 
     return predict(dataIn)    
 
-@app.route('/predictwithteams/<string:teams>')
 def team_predict(teams):
     teams_data = json.loads(teams)
     
@@ -57,7 +48,3 @@ def team_predict(teams):
     b2 = avg_stats(pd.DataFrame(json.loads(requests.get(URL, param).text)['result'])).rename(lambda x: "b2"+x, axis="columns")
 
     return predict(pd.concat([r1, r2, b1, b2], axis = 1,  sort = False))
-    
-    
-if __name__ == '__main__':
-    app.run(debug=True)
